@@ -1,0 +1,51 @@
+
+This project is to automate scrapper and create a Json file and save user directory
+
+Lets now talk about the two testcases.
+
+Common methods In Wrapper class:
+
+1. Method name --- goToURL 
+For all testcases to open the youtube url i have created a common method to be called before every test case execution.
+2. Method name --- enterText
+To clear and enter the text in a textbox and press enter
+3.  Method name --- clickButton
+Common method to click a button
+4. Method name --- createEpochTime
+Common method to return a Epochtime to the calling function.
+
+testCase01: Go to this website and click on "Hockey Teams: Forms, Searching and Pagination" 
+
+1. Go the url provided with scrapper() method which will open the website
+2. click the hockey link 
+3. Call the teamDetails() Wrapper method which will perform all the validation for the testcase.
+4. Loop through the values from page 1 to 4 and do the following:
+   a) Get the full table in a webelement and loop through again
+   b) Initialise a array list
+   c) check if the win percent <0.4 then get the team name, Year and Win % and store it in a Array List
+   d) Put the values in a Map 
+   e) Reinitialize the arraylist   
+5. Create a object of Mapper
+6. Print the map values in console with the object created
+7. Use the Mapper object and write the Json file in the path userDir + "\\src\\test\\resources\\JSONFromMap.json"
+
+testCase02: Go to the "Films" or "Movies" tab and in the “Top Selling” section, scroll to the extreme right. Apply a Soft Assert on whether the movie is marked “A” for Mature or not. Apply a Soft assert on the movie category to check if it exists ex: "Comedy", "Animation", "Drama".
+
+1. Go the url provided with scrapper() method which will open the website
+2. click the Oscar link 
+3. Call the checkOscarFilm() Wrapper method which will perform all the validation for the testcase.
+4. Loop through the values of all years(2015, 2014, 2013, 2012, 2011, 2010) and do the following:
+   a) Get the full table and traverse through only first 5 films in a webelement and loop through again
+   b) Initialise a array list
+   c) if there is flag in the Best Picture then make (isWinner = true) for all other values make it as false.
+   c) Get and add the following values in the Array List.
+	Epoch Time of Scrape, Year, Title, Nomination, Awards, isWinner
+   d) Put the values in a Map 
+   e) Reinitialize the arraylist   
+5. Create a object of Mapper
+6. Print the map values in console with the object created
+7. Use the Mapper object and write the Json file in the path userDir + "\\JSONFromFilmMap.json".
+8. Assert if the file is created and not empty.
+
+
+Finally end the testcase and close the scrapper website.
