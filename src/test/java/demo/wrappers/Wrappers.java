@@ -41,32 +41,18 @@ public class Wrappers {
     /*
      * Write your selenium wrappers here
      */
-    static ArrayList<String> teamInfoList = new ArrayList<>();
-    static ArrayList<String> filmInfoList = new ArrayList<>();    
-    static ObjectMapper mapper = new ObjectMapper();
-    static Map<String, Object> teamMap = new HashMap<String, Object>();
-    static Map<String, Object> filmMap = new HashMap<String, Object>();
 
-    /* Common method to go to URL and check if the page is loaded properly using javascript executor readystate */
+    static ObjectMapper mapper = new ObjectMapper();
+
+    /*
+     * Common method to go to URL and check if the page is loaded properly using
+     * javascript executor readystate
+     */
     public static void goToURL(WebDriver driver, String Url) throws InterruptedException {
         driver.get(Url);
         new WebDriverWait(driver, Duration.ofSeconds(10)).until(
                 webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState")
                         .equals("complete"));
-    }
-    
-    /* common method to enter a text */
-    public static void enterText(WebDriver driver, By Locator, String enterText) {
-        try {
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            wait.until(ExpectedConditions.visibilityOfElementLocated(Locator));
-            WebElement inputElement = driver.findElement(Locator);
-            inputElement.clear();
-            inputElement.sendKeys(enterText);
-            inputElement.sendKeys(Keys.ENTER);
-        } catch (Exception e) {
-            System.out.println("Exception message : " + e.getMessage());
-        }
     }
 
     /* common method to click a button */
@@ -81,64 +67,51 @@ public class Wrappers {
         }
     }
 
-    /* method to find the epoch time */
-    public static long createEpochTime() throws ParseException{
-        Date today = Calendar.getInstance().getTime();      
-        SimpleDateFormat crunchifyFormat = new SimpleDateFormat("MMM dd yyyy HH:mm:ss.SSS zzz");        
-        String currentTime = crunchifyFormat.format(today);              
-
-        Date date = crunchifyFormat.parse(currentTime);
-        long epochTime = date.getTime();       
-        return epochTime;
-    }
-
-    /*method for Testcase01 to get the Team details */
+    /* method for Testcase01 to get the Team details */
     public static void teamDetails(WebDriver driver, By locator) throws InterruptedException, ParseException {
-   
-        List<WebElement> fulltable = driver.findElements(locator);
 
-        /* first for loop to traverse to 4 pages. Already 1 page is clicked so starting from page 2 */
-        /* Second loop will go through all the elements in the full table */
-        for (int j = 2; j <= 5; j++) {
-            for (int i = 2; i < fulltable.size(); i++) {
-                WebElement teamWinPercent = driver.findElement(By.xpath("//tbody/tr[" + i + "]/td[6]"));
-                String check = teamWinPercent.getText();
-                double convert = Double.parseDouble(check);
-                if (convert < 0.40) {
-                    WebElement teamNameElement = driver.findElement(By.xpath("//tbody/tr[" + i + "]/td[1]"));
-                    WebElement teamYearElement = driver.findElement(By.xpath("//tbody/tr[" + i + "]/td[2]"));
+        /* Creating a ArrayList of HashMap */
+        ArrayList<HashMap<String, Object>> teamList = new ArrayList<>();
 
-                    String teamName = String.valueOf(teamNameElement.getText());
-                    String teamYear = String.valueOf(teamYearElement.getText());
-                    String teamWinPer = String.valueOf(convert);
-                    /*creating a new arraylist each time after writing the values to map */
-                    teamInfoList = new ArrayList<>();
-                    
-                    long teamEpochTime=Wrappers.createEpochTime();
-                    /*Adding the values to list */
-                    teamInfoList.add(String.valueOf(teamEpochTime));
-                    teamInfoList.add(teamWinPer);
-                    teamInfoList.add(teamName);
-                    teamInfoList.add(teamYear);
-                    teamInfoList.add(teamWinPer);                   
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//ul[@class='pagination']/li/a)[1]")));
 
+        WebElement pagination = driver.findElement(By.xpath("(//ul[@class='pagination']/li/a)[1]"));
+        pagination.click();
+
+        for (int page = 1; page <= 4; page++) {
+            List<WebElement> parentElement = driver.findElements(locator);
+            for (WebElement parent : parentElement) {
+                String teamName = parent.findElement(By.xpath("./td[@class='name']")).getText();
+                int teamYear = Integer.parseInt(parent.findElement(By.xpath("./td[@class='year']")).getText());
+                double teamWinPercent = Double
+                        .parseDouble(parent.findElement(By.xpath("./td[contains(@class,'pct')]")).getText());
+
+                long epoch = System.currentTimeMillis() / 1000;
+                String teamEpochTime = String.valueOf(epoch);
+
+                if (teamWinPercent < 0.40) {
+                    HashMap<String, Object> dataMap = new HashMap<>();
                     /* Putting the value in the map */
-                    teamMap.put(teamName, teamInfoList);
-
-                    // System.out.println("Team Name: "+teamName);
-                    // System.out.println("Team Year: "+teamYear);
-                    // System.out.println("Teams win% less than 40% : "+convert);                   
-
+                    dataMap.put("epochTime", teamEpochTime);
+                    dataMap.put("TeamwinPercent", teamWinPercent);
+                    dataMap.put("TeamName", teamName);
+                    dataMap.put("TeamYear", teamYear);
+                    teamList.add(dataMap);
                 }
             }
-            /*Clicking on the next page */
-            WebElement pagination = driver.findElement(By.xpath("//a[@href='/pages/forms/?page_num=" + j + "']"));
-            pagination.click();
-            Thread.sleep((new java.util.Random().nextInt(3) + 2) * 1000);
+            /* Clicking on the next page */
+            if (page < 4) {
+                WebElement nextPageElement = driver.findElement(By.xpath("//a[@aria-label='Next']"));
+                nextPageElement.click();
+                /* wait till the page loads to scrape the data again */
+                Thread.sleep(3000);
+            }
         }
+
         /* Printing the value from the map through the mapper object */
         try {
-            String employeePrettyJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(teamMap);
+            String employeePrettyJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(teamList);
             System.out.println(employeePrettyJson);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -149,89 +122,72 @@ public class Wrappers {
         // Writing JSON on a file
         try {
             mapper.writerWithDefaultPrettyPrinter()
-                    .writeValue(new File(userDir + "\\src\\test\\resources\\JSONFromMap.json"), teamMap);
+                    .writeValue(new File(userDir + "\\src\\test\\resources\\JSONFromHockeyList.json"), teamList);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    /*method for Testcase02 to get the Oscar Film details for each year from 2015 to 2010*/
-    public static void checkOscarFilm(WebDriver driver, By locator) throws InterruptedException, ParseException {
+    /*
+     * method for Testcase02 to get the Oscar Film details for each year from 2015
+     * to 2010
+     */
+    public static void checkOscarFilm(String year, WebDriver driver) throws InterruptedException, ParseException {
 
-        List<WebElement> listYear = driver.findElements(locator);
-        filmInfoList = new ArrayList<>();
-        /*Boolean variable to check if the film is the oscar winner for the current year */
-        Boolean isWinner;
+        WebElement yearLink = driver.findElement(By.id(year));
+        String yearLinkText = yearLink.getText();
+        yearLink.click();
 
-        /* Loop traverse from 2015 to 2010 */
-        for (int i=0;i<listYear.size();i++){
-           
-            listYear.get(i).click();  
-            Thread.sleep(1000);
-            /*Getting the current clicked year */
-            String year=listYear.get(i).getText();
-            WebDriverWait wait=new WebDriverWait(driver,Duration.ofSeconds(10)); 
-            wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//tbody/tr")));
-            
-            /*Getting the values in the table for the clicked year */
-            List<WebElement> oscarTable=driver.findElements(By.xpath("//tbody/tr"));      
-           
-            for(int j=1;j<oscarTable.size();j++){
-                isWinner=false;
-                filmInfoList = new ArrayList<>();
-                /*getting only the first 5 Film details */
-                if(j==6){
-                    break;
-                }
-                Thread.sleep(1000);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//table[@class='table']")));
 
-                String filmTitle=driver.findElement(By.xpath("//tbody/tr[" + j +"]/td[1]")).getText();
-                String filmNomination=driver.findElement(By.xpath("//tbody/tr[" + j +"]/td[2]")).getText();
-                String filmAwards=driver.findElement(By.xpath("//tbody/tr[" + j +"]/td[3]")).getText(); 
-                if(j==1){                   
-                  WebElement filmBestPicture=driver.findElement(By.xpath("//tr[" + j +"]/td[4]/i[@class='glyphicon glyphicon-flag']"));
-                  if(filmBestPicture.isDisplayed()){                              
-                        isWinner=true;                       
-                    }             
-                }
-                long teamEpochTime=Wrappers.createEpochTime();
-                /*Adding the Film details to the list */
-                filmInfoList.add(String.valueOf(teamEpochTime));
-                filmInfoList.add(String.valueOf(year));
-                filmInfoList.add(String.valueOf(filmTitle));
-                filmInfoList.add(String.valueOf(filmNomination));
-                filmInfoList.add(String.valueOf(filmAwards));
-                filmInfoList.add(String.valueOf(isWinner));        
-                
-                /*Putting the Film details to the Map from List - Key is film Title*/
-                filmMap.put(filmTitle,filmInfoList);
-                //  for (Map.Entry<String, Object> entry : filmMap.entrySet()) {
-                // System.out.println(entry.getKey() + ":" + entry.getValue().toString());
-                //   }                
-            }  
-                        
+        ArrayList<HashMap<String, String>> filmInfoList = new ArrayList<>();
+
+        /* Getting the values in the table for the clicked year */
+        /* getting only the first 5 Film details */
+
+        List<WebElement> filmrows = driver.findElements(By.xpath("//tr[@class='film']"));
+        int count = 1;
+
+        for (WebElement film : filmrows.subList(0, 5)) {
+
+            String filmTitle = film.findElement(By.xpath("./td[contains(@class,'title')]")).getText();
+            String filmNomination = film.findElement(By.xpath("./td[contains(@class,'nominations')]")).getText();
+            String filmAwards = film.findElement(By.xpath("./td[contains(@class,'awards')]")).getText();
+
+            boolean isWinnerflag = count == 1;
+            String isWinner = String.valueOf(isWinnerflag);
+
+            long epoch = System.currentTimeMillis() / 1000;
+            String filmEpochTime = String.valueOf(epoch);
+
+            HashMap<String, String> filmMap = new HashMap<>();
+
+            /* Adding the Film details to the list */
+            filmMap.put("epochTime", filmEpochTime);
+            filmMap.put("Year", yearLinkText);
+            filmMap.put("Title", filmTitle);
+            filmMap.put("Nomination", filmNomination);
+            filmMap.put("Awards", filmAwards);
+            filmMap.put("isWinner", isWinner);
+
+            /* Putting the Film details to the List from Map */
+            filmInfoList.add(filmMap);
+            count++;
+
         }
 
-        /*Writing the details of map on console using mapper object */
+        /* Writing JSON on a file on the output folder */
         try {
-            String oscarDetailsJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(filmMap);
-            System.out.println(oscarDetailsJson);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-        String userDir = System.getProperty("user.dir");
-
-        /* Writing JSON on a file on the output folder*/
-        try {
-            mapper.writerWithDefaultPrettyPrinter()
-                    .writeValue(new File(userDir + "\\JSONFromFilmMap.json"), filmMap);
+            String userDir = System.getProperty("user.dir");
+            File jsonFile = new File(userDir + "/src/test/resources/" + year + "-Oscar-Winner-data.json");
+            mapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile, filmInfoList);
+            System.out.println("Json File written to : " + jsonFile.getAbsolutePath());
+            /* Assert if the file exist and is not empty */
+            Assert.assertTrue(jsonFile.length() != 0);
         } catch (IOException e) {
             e.printStackTrace();
         }
-      
-        /* Assert if the file exist and is not empty */
-      Assert.assertFalse("userDir+\\JSONFromFilmMap.json".isEmpty());      
-         
+
     }
 }

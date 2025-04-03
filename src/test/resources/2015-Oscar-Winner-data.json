@@ -1,0 +1,36 @@
+[ {
+  "isWinner" : "true",
+  "Awards" : "2",
+  "Year" : "2015",
+  "Title" : "Spotlight",
+  "Nomination" : "6",
+  "epochTime" : "1743650109"
+}, {
+  "isWinner" : "false",
+  "Awards" : "6",
+  "Year" : "2015",
+  "Title" : "Mad Max: Fury Road",
+  "Nomination" : "10",
+  "epochTime" : "1743650110"
+}, {
+  "isWinner" : "false",
+  "Awards" : "3",
+  "Year" : "2015",
+  "Title" : "The Revenant",
+  "Nomination" : "12",
+  "epochTime" : "1743650110"
+}, {
+  "isWinner" : "false",
+  "Awards" : "1",
+  "Year" : "2015",
+  "Title" : "Bridge of Spies",
+  "Nomination" : "6",
+  "epochTime" : "1743650110"
+}, {
+  "isWinner" : "false",
+  "Awards" : "1",
+  "Year" : "2015",
+  "Title" : "The Big Short",
+  "Nomination" : "5",
+  "epochTime" : "1743650110"
+} ]

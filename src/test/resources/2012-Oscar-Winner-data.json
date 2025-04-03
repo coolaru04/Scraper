@@ -1,0 +1,36 @@
+[ {
+  "isWinner" : "true",
+  "Awards" : "3",
+  "Year" : "2012",
+  "Title" : "Argo",
+  "Nomination" : "7",
+  "epochTime" : "1743650119"
+}, {
+  "isWinner" : "false",
+  "Awards" : "4",
+  "Year" : "2012",
+  "Title" : "Life of Pi",
+  "Nomination" : "11",
+  "epochTime" : "1743650119"
+}, {
+  "isWinner" : "false",
+  "Awards" : "3",
+  "Year" : "2012",
+  "Title" : "Les Misérables",
+  "Nomination" : "8",
+  "epochTime" : "1743650119"
+}, {
+  "isWinner" : "false",
+  "Awards" : "2",
+  "Year" : "2012",
+  "Title" : "Lincoln",
+  "Nomination" : "12",
+  "epochTime" : "1743650119"
+}, {
+  "isWinner" : "false",
+  "Awards" : "2",
+  "Year" : "2012",
+  "Title" : "Django Unchained",
+  "Nomination" : "5",
+  "epochTime" : "1743650119"
+} ]

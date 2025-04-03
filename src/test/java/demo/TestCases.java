@@ -21,17 +21,17 @@ public class TestCases {
     ChromeDriver driver;
 
     /*
-     * TODO: Write your tests here with testng @Test annotation. 
-     * Follow `testCase01` `testCase02`... format or what is provided in instructions
+     * TODO: Write your tests here with testng @Test annotation.
+     * Follow `testCase01` `testCase02`... format or what is provided in
+     * instructions
      */
 
-     
     /*
-     * Do not change the provided methods unless necessary, they will help in automation and assessment
+     * Do not change the provided methods unless necessary, they will help in
+     * automation and assessment
      */
     @BeforeTest
-    public void startBrowser()
-    {
+    public void startBrowser() {
         System.setProperty("java.util.logging.config.file", "logging.properties");
 
         // NOT NEEDED FOR SELENIUM MANAGER
@@ -45,47 +45,54 @@ public class TestCases {
         options.setCapability("goog:loggingPrefs", logs);
         options.addArguments("--remote-allow-origins=*");
 
-        System.setProperty(ChromeDriverService.CHROME_DRIVER_LOG_PROPERTY, "build/chromedriver.log"); 
+        System.setProperty(ChromeDriverService.CHROME_DRIVER_LOG_PROPERTY, "build/chromedriver.log");
 
         driver = new ChromeDriver(options);
 
         driver.manage().window().maximize();
     }
 
+    @BeforeMethod
+    public void scrapperlogin() throws InterruptedException {
+        Wrappers.goToURL(driver, "https://www.scrapethissite.com/pages/");
+        Thread.sleep((new java.util.Random().nextInt(3) + 2) * 1000); // 1000 - 4000ms
+    }
 
-        @BeforeMethod
-        public void scrapperlogin() throws InterruptedException{
-                Wrappers.goToURL(driver, "https://www.scrapethissite.com/pages/");
-                Thread.sleep((new java.util.Random().nextInt(3)+2) * 1000); //1000 - 4000ms
-        }
+    /*
+     * testCase01: Go to this website and click on
+     * "Hockey Teams: Forms, Searching and Pagination"
+     */
+    @Test(enabled = true)
+    public void testCase01() throws InterruptedException, ParseException {
+        System.out.println("Start TestCase01 ");
+        /* Clicking the guide button */
+        By hockeylink = By.xpath("//a[@href='/pages/forms/']");
+        Wrappers.clickButton(driver, hockeylink);
+        By tabledetails = By.xpath("//tr[@class='team']");
+        Wrappers.teamDetails(driver, tabledetails);
+        System.out.println("End TestCase01");
+    }
 
-       /* testCase01: Go to this website and click on "Hockey Teams: Forms, Searching and Pagination" */
-        @Test(enabled = true)
-        public void testCase01() throws InterruptedException, ParseException {
-                System.out.println("Start TestCase01 ");   
-                /*Clicking the guide button */
-                By hockeylink=By.xpath("//a[@href='/pages/forms/']");
-                Wrappers.clickButton(driver, hockeylink);
-                By tabledetails=By.xpath("//tbody/tr");
-                Wrappers.teamDetails(driver, tabledetails);
-                System.out.println("End TestCase01");
-        }
+    /* testCase02: Go to this website and click on "Oscar Winning Films" */
+    @Test(enabled = true)
+    public void testCase02() throws InterruptedException, ParseException {
+        System.out.println("Start TestCase02 ");
+        /* Clicking the guide button */
+        By oscarLink = By.xpath("//a[@href='/pages/ajax-javascript/']");
+        Wrappers.clickButton(driver, oscarLink);
 
-        /*testCase02: Go to this website and click on "Oscar Winning Films" */
-        @Test(enabled = true)
-        public void testCase02() throws InterruptedException, ParseException {
-                System.out.println("Start TestCase02 ");   
-                /*Clicking the guide button */
-                By oscarLink=By.xpath("//a[@href='/pages/ajax-javascript/']"); 
-                Wrappers.clickButton(driver, oscarLink);
-                By yearLink=By.xpath("//a[@href='#']");
-                Wrappers.checkOscarFilm(driver, yearLink);
-                System.out.println("End TestCase02");
-        }
+        Wrappers.checkOscarFilm("2015", driver);
+        Wrappers.checkOscarFilm("2014", driver);
+        Wrappers.checkOscarFilm("2013", driver);
+        Wrappers.checkOscarFilm("2012", driver);
+        Wrappers.checkOscarFilm("2011", driver);
+        Wrappers.checkOscarFilm("2010", driver);
+
+        System.out.println("End TestCase02");
+    }
 
     @AfterTest
-    public void endTest()
-    {
+    public void endTest() {
         driver.close();
         driver.quit();
 
